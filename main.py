@@ -12,9 +12,10 @@ if __name__ == "__main__":
     learning_rate = 0.001
     num_epochs = 10
     image_size = (100, 100)
+    batch_size = 200
 
     # Load data
-    train_dataloader, test_dataloader = load_data('dataset.csv')
+    train_dataloader, test_dataloader = load_data('dataset.csv', batch_size=batch_size, image_size=image_size)
 
     # Load model
     model = load_model(num_classes, device, load_latest=True, save_folder='saved_models/cnn')
