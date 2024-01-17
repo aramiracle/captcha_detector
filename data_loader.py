@@ -35,12 +35,9 @@ class CaptchaDataset(Dataset):
     def convert_label_to_sequence(self, label_chars, max_length=10):  # Set max_length to the maximum label length
         label_sequence = [self.char_to_index[char] for char in label_chars]
 
-        # Ensure that the sequence length does not exceed the maximum length
-        label_sequence = label_sequence[:max_length]
-
         # Pad the sequence with zeros if its length is less than max_length
         pad_length = max(0, max_length - len(label_sequence))
-        label_sequence += [0] * pad_length
+        label_sequence += [36] * pad_length
 
         label_sequence = torch.tensor(label_sequence, dtype=torch.long)
         label_sequence = F.one_hot(label_sequence, num_classes=36 + 1).view(max_length ,36 + 1)

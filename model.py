@@ -5,6 +5,7 @@ import torchvision.models as models
 
 
 class CRNNModel(nn.Module):
+
     def __init__(self, num_classes=36, max_length=10, rnn_hidden_size=256):
         super(CRNNModel, self).__init__()
         self.num_classes = num_classes
@@ -41,5 +42,28 @@ class CRNNModel(nn.Module):
         combined_out = torch.cat((gru_out, lstm_out), dim=-1)
 
         output_sequence = self.fc(combined_out).view(combined_out.size(0), self.max_length, self.num_classes + 1)
+
+        return output_sequence
+    
+class CNNModel(nn.Module):
+
+    def __init__(self, num_classes=36, max_length=10):
+        super(CNNModel, self).__init__()
+        self.num_classes = num_classes
+        self.max_length = max_length
+
+        # CNN for feature extraction
+        self.model = models.efficientnet_v2_s(weights='EfficientNet_V2_S_Weights.DEFAULT')
+        self.cnn = torch.nn.Sequential(*(list(self.model.children())[:-1]))
+
+        # Linear layer for mapping hidden states to output at each time step
+        self.fc = nn.Linear(1280, max_length * (num_classes + 1))
+
+    def forward(self, x):
+        # CNN feature extraction
+        features = self.cnn(x)
+        features = features.view(features.size(0), -1, 1280)  # Adjust the size for the RNN input
+
+        output_sequence = self.fc(features).view(features.size(0), self.max_length, self.num_classes + 1)
 
         return output_sequence
