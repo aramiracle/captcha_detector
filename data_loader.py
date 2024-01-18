@@ -1,17 +1,17 @@
 import torch
+import torch.nn.functional as F
 from torch.utils.data import Dataset
-import torch.nn.functional as F 
+from torchvision import transforms
 from PIL import Image
 import io
 import ast
 import re
 
 class CaptchaDataset(Dataset):
-    def __init__(self, dataframe, transform=None, black_threshold=10):
+    def __init__(self, dataframe, transform=None):
         self.dataframe = dataframe
         self.transform = transform
         self.char_to_index = self.create_char_to_index_mapping()
-        self.black_threshold = black_threshold
 
     def __len__(self):
         return len(self.dataframe)
@@ -25,25 +25,22 @@ class CaptchaDataset(Dataset):
 
         img = Image.open(io.BytesIO(img_bytes)).convert('RGB')  # Assuming it's a grayscale image
 
-        # Check if the image is predominantly black
-        if self.is_black_image(img):
-            # Skip this sample (return None)
-            return None
+        # Use torchvision.transforms.ToTensor() to convert the PIL image to a PyTorch tensor
+        img_tensor = transforms.ToTensor()(img)
+
+        # Check if the image is black (all pixel values are zero)
+        if torch.all(img_tensor == 0):
+            # Skip this image and get the next one
+            return self.__getitem__((idx + 1) % len(self))
 
         if self.transform:
             img = self.transform(img)
 
         return img, label
 
-    def is_black_image(self, img):
-        # Convert the image to a NumPy array
-        img_array = torch.tensor(img).numpy()
-
-        # Calculate the mean pixel value
-        mean_pixel_value = img_array.mean()
-
-        # Check if the mean pixel value is below the black threshold
-        return mean_pixel_value < self.black_threshold
+    def create_char_to_index_mapping(self):
+        characters = "abcdefghijklmnopqrstuvwxyz0123456789"
+        return {char: index for index, char in enumerate(characters)}
 
     def create_char_to_index_mapping(self):
         characters = "abcdefghijklmnopqrstuvwxyz0123456789"
@@ -57,6 +54,6 @@ class CaptchaDataset(Dataset):
         label_sequence += [36] * pad_length
 
         label_sequence = torch.tensor(label_sequence, dtype=torch.long)
-        label_sequence = F.one_hot(label_sequence, num_classes=36 + 1).view(max_length, 36 + 1)
+        label_sequence = F.one_hot(label_sequence, num_classes=36 + 1).view(max_length ,36 + 1)
         
         return label_sequence
