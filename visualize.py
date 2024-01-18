@@ -64,24 +64,21 @@ class CaptchaVisualizer:
         with torch.no_grad():
             for batch_idx, (images, labels) in enumerate(test_dataloader):
                 images, labels = images.to(self.device), labels.to(self.device)
-                
+
                 # Forward pass to get predictions
                 model.eval()
                 outputs = model(images)
-                
-                # Convert one-hot encoded predictions to indices
+
+                # Convert model outputs to indices
                 outputs_indices = torch.argmax(outputs, dim=2)
                 labels_indices = torch.argmax(labels, dim=2)
 
-                # Get softmax probabilities for confidence
-                softmax_probs = torch.nn.functional.softmax(outputs, dim=2)
-                
                 # Decode true labels
                 true_labels = [self.decode_labels(label) for label in labels_indices]
 
                 # Decode predicted labels and get confidence
                 predictions = [self.decode_predictions(j, outputs_indices) for j in range(images.size(0))]
-                total_confidences = [np.prod(self.get_confidence_per_char(j, softmax_probs, outputs_indices[j]))
+                total_confidences = [np.prod(self.get_confidence_per_char(j, outputs, outputs_indices[j]))
                                     for j in range(images.size(0))]
 
                 # Calculate negative logarithm (base 10 or base e) of the confidence values
@@ -94,15 +91,11 @@ class CaptchaVisualizer:
                     ax = axs[j]
                     image = transforms.ToPILImage()(images[j].cpu())
                     ax.imshow(np.array(image))
-                    ax.set_title(f"True: {true_labels[j]}, Predicted: {predictions[j]}, -log(Confidence): {neg_log_confidences[j]:.2f}")
-
-                    # Create a separate text box to display confidence information
-                    char_confidences = self.get_confidence_per_char(j, softmax_probs, outputs_indices[j])
-                    textstr = "\n".join([f"Char: {char}, Confidence: {confidence:.2f}" for char, confidence in zip(predictions[j], char_confidences)])
-                    ax.text(1.05, 0.5, textstr, transform=ax.transAxes, fontsize=8, verticalalignment='center', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
+                    ax.set_title(f"True: {true_labels[j]}, Predicted: {predictions[j]}, -log(Confidence): {neg_log_confidences[j]:.2f}, Total confidence: {total_confidences[j]:.4f}")
 
                 plt.tight_layout()
                 plt.show()
+
 
 if __name__ == "__main__":
     # Set device and hyperparameters

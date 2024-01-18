@@ -27,6 +27,8 @@ class CRNNModel(nn.Module):
         # Linear layer for mapping hidden states to output at each time step
         self.fc = nn.Linear(4 * rnn_hidden_size, max_length * (num_classes + 1))
 
+        self.softmax = nn.Softmax(dim=-1)
+
     def forward(self, x):
         # CNN feature extraction
         features = self.cnn(x)
@@ -43,7 +45,9 @@ class CRNNModel(nn.Module):
 
         output_sequence = self.fc(combined_out).view(combined_out.size(0), self.max_length, self.num_classes + 1)
 
-        return output_sequence
+        output_probs = self.softmax(output_sequence)
+
+        return output_probs
     
 class CNNModel(nn.Module):
 
@@ -58,6 +62,8 @@ class CNNModel(nn.Module):
 
         # Linear layer for mapping hidden states to output at each time step
         self.fc = nn.Linear(1280, max_length * (num_classes + 1))
+        
+        self.softmax = nn.Softmax(dim=-1)
 
     def forward(self, x):
         # CNN feature extraction
@@ -65,5 +71,7 @@ class CNNModel(nn.Module):
         features = features.view(features.size(0), -1, 1280)  # Adjust the size for the RNN input
 
         output_sequence = self.fc(features).view(features.size(0), self.max_length, self.num_classes + 1)
-
-        return output_sequence
+        
+        output_probs = self.softmax(output_sequence)
+        
+        return output_probs
