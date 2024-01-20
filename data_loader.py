@@ -23,7 +23,7 @@ class CaptchaDataset(Dataset):
         label_chars = re.findall(r"'(.*?)'", label_string)[0].lower()
         label = self.convert_label_to_sequence(label_chars)
 
-        img = Image.open(io.BytesIO(img_bytes)).convert('RGB')  # Assuming it's a grayscale image
+        img = Image.open(io.BytesIO(img_bytes)).convert('RGB')
 
         # Use torchvision.transforms.ToTensor() to convert the PIL image to a PyTorch tensor
         img_tensor = transforms.ToTensor()(img)

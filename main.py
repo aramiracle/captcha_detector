@@ -15,7 +15,7 @@ if __name__ == "__main__":
     save_folder='saved_models/cnn'
 
     # Load data
-    train_dataloader, test_dataloader = load_data('dataset.csv', batch_size=batch_size, image_size=image_size)
+    train_dataloader, test_dataloader = load_data(('dataset.csv', 'captchas.csv'), batch_size=batch_size, image_size=image_size)
 
     # Load model
     model = load_model(num_classes, device, load_latest=True, save_folder=save_folder)

@@ -10,7 +10,7 @@ from tqdm import tqdm
 def generate_random_string(length):
     return ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(length))
 
-def draw_text(draw, text, font, position, color, angle, margin_x=5, margin_y=5):
+def draw_text(draw, image, text, font, position, color, angle, margin_x=5, margin_y=5):
     # Use a temporary image for size calculation
     temp_img = Image.new('RGB', (1, 1))
     temp_draw = ImageDraw.Draw(temp_img)
@@ -41,7 +41,8 @@ def draw_text(draw, text, font, position, color, angle, margin_x=5, margin_y=5):
                          position[1] - rotated_bbox[1] + margin_y)
     
     # Paste the rotated text onto the main image using the mask
-    captcha.paste(rotated_text_img, adjusted_position, mask=rotated_text_img)
+    image.paste(rotated_text_img, adjusted_position, mask=rotated_text_img)
+
 
 def draw_spots(draw, width, height, num_spots):
     for _ in range(num_spots):
@@ -77,14 +78,13 @@ def elastic_transform(image, alpha, sigma):
 
 def generate_captcha():
     # Increase the size of the captcha image
-    width, height = 500, 150
-    global captcha  # Declare captcha as a global variable
+    width, height = 150, 50
     captcha = Image.new('RGB', (width, height), color='white')
     draw = ImageDraw.Draw(captcha)
 
     # Set a specific font size and use Carlito font
-    font_size = 80
-    font_path = "Carlito-Regular.ttf"
+    font_size = 25
+    font_path = "Carlito-Bold.ttf"
     font = ImageFont.truetype(font_path, font_size)
 
     captcha_text = generate_random_string(random.randint(6, 10))
@@ -95,31 +95,40 @@ def generate_captcha():
     text_angle = random.randint(-10, 10)
 
     # Draw the rotated text with margins
-    draw_text(draw, captcha_text, font, text_position, text_color, text_angle, margin_x=25, margin_y=25)
+    draw_text(draw, captcha, captcha_text, font, text_position, text_color, text_angle, margin_x=25, margin_y=25)
 
-    draw_spots(draw, width, height, 20000)
-    draw_lines(draw, width, height, 30)
+    draw_spots(draw, width, height, 2000)
+    draw_lines(draw, width, height, 20)
+
+    # Convert image to RGBA before applying elastic transformation
+    captcha = captcha.convert('RGBA')
 
     # Apply random elastic transformation
     captcha = elastic_transform(captcha, alpha=50.0, sigma=5.0)
 
+    # Convert image back to RGB after elastic transformation
+    captcha = captcha.convert('RGB')
+
+    # Apply image smoothing
     captcha = captcha.filter(ImageFilter.SMOOTH)
-    captcha.save("captcha.png")
+
+    return captcha, captcha_text
 
 def generate_captcha_data(num_captchas):
     captcha_data = []
 
     for i in tqdm(range(num_captchas), desc="Generating Captchas", unit="captcha"):
         # Generate captcha
-        generate_captcha()
+        captcha, captcha_text = generate_captcha()
 
         # Convert captcha image to binary bytes
         image_bytes = BytesIO()
         captcha.save(image_bytes, format='PNG')
-        image_bytes = image_bytes.getvalue()
+        image_bytes.seek(0)  # Reset the buffer position to the beginning
 
-        # Get captcha text
-        captcha_text = generate_random_string(random.randint(6, 10))
+        # Append captcha data to the list
+        captcha_data.append({'image': {'bytes': image_bytes, 'name': f'captcha_{i}.png'}, 'text': f"This is '{captcha_text}'"})
+
 
         # Append captcha data to the list
         captcha_data.append({'image': {'bytes': image_bytes, 'name': f'captcha_{i}.png'}, 'text': f"This is '{captcha_text}'"})
@@ -127,7 +136,7 @@ def generate_captcha_data(num_captchas):
     return captcha_data
 
 if __name__ == "__main__":
-    num_captchas = 50000
+    num_captchas = 300
     captcha_data = generate_captcha_data(num_captchas)
 
     # Create DataFrame from captcha data
@@ -135,3 +144,13 @@ if __name__ == "__main__":
 
     # Save DataFrame to a CSV file
     df.to_csv('captchas.csv', index=False)
+
+    # Load a random captcha from the DataFrame
+    # random_captcha = df.sample(n=1)
+    # print(random_captcha)
+    # # Display the loaded captcha image
+    # captcha_image = Image.open(BytesIO(random_captcha['image']['bytes']))
+    # captcha_image.save('captha.png')
+
+    # # Print the corresponding text
+    # print(random_captcha['text'])
