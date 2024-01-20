@@ -14,7 +14,9 @@ def load_data(csv_file, test_size=0.1, random_state=42, batch_size=200, image_si
         transforms.ToTensor()
     ])
 
-    df = pd.read_csv(csv_file)
+    df_downloaded = pd.read_csv(csv_file)
+    df_generated = pd.read_csv(csv_file)
+    df = pd.concat([df_downloaded, df_generated])
 
     df_train, df_test = train_test_split(df, test_size=test_size, random_state=random_state)
 
@@ -46,7 +48,7 @@ def load_model(num_classes, device, load_latest=True, save_folder="saved_models"
 
     return model
 
-def train_model(model, train_dataloader, test_dataloader, criterion, optimizer, num_epochs, device):
+def train_model(model, train_dataloader, test_dataloader, criterion, optimizer, num_epochs, save_folder, device):
     best_train_loss = float('inf')
 
     for epoch in range(num_epochs):
@@ -76,7 +78,6 @@ def train_model(model, train_dataloader, test_dataloader, criterion, optimizer, 
                     best_train_loss = average_train_loss
                     print(f"Epoch {epoch+1} - Best training loss so far: {best_train_loss}")
 
-            save_folder = "saved_models"
             save_path = os.path.join(save_folder, f"captcha_model_epoch_{epoch+1}.pth")
             torch.save(model.state_dict(), save_path)
 

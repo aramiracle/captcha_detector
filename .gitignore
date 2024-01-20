@@ -1,5 +1,6 @@
 __pycache__
 dataset.csv
+captchas.csv
 saved_models
 data
 
