@@ -17,12 +17,10 @@ class CaptchaDataset(Dataset):
         return len(self.dataframe)
 
     def __getitem__(self, idx):
-        flag = False
         img_dict = self.dataframe.iloc[idx]['image']
         if isinstance(img_dict, str):
             img_bytes = ast.literal_eval(img_dict)['bytes']
         else:
-            flag =True
             img_bytes = img_dict.values[0]['bytes']
 
         label_string = self.dataframe.iloc[idx]['text']
@@ -33,9 +31,6 @@ class CaptchaDataset(Dataset):
         img_tensor = transforms.ToTensor()(img)
 
         if torch.all(img_tensor == 0):
-            print("Image is black")
-            if flag:
-                print("Generated captchas loaded but it is black")
             return self.__getitem__((idx + 1) % len(self))
 
         if self.transform:
