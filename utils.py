@@ -17,15 +17,14 @@ def load_data(csv_files, test_size=0.1, random_state=42, batch_size=200, image_s
     df_downloaded = pd.read_csv(csv_files[0])
     df_generated = pd.read_csv(csv_files[1])
     df = pd.concat([df_downloaded, df_generated])
-    print(df.shape)
 
     df_train, df_test = train_test_split(df, test_size=test_size, random_state=random_state, shuffle=True)
-
+    
     captcha_train_dataset = CaptchaDataset(df_train, transform=transform)
     captcha_test_dataset = CaptchaDataset(df_test, transform=transform)
 
     train_dataloader = DataLoader(captcha_train_dataset, batch_size=batch_size, shuffle=True)
-    test_dataloader = DataLoader(captcha_test_dataset, batch_size=batch_size, shuffle=False)
+    test_dataloader = DataLoader(captcha_test_dataset, batch_size=5, shuffle=False)
 
     return train_dataloader, test_dataloader
 

@@ -6,6 +6,7 @@ from torchvision import transforms
 import pandas as pd
 from io import BytesIO
 from tqdm import tqdm
+import ast
 
 def generate_random_string(length):
     return ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(length))
@@ -38,7 +39,7 @@ def draw_text(draw, image, text, font, position, color, angle, margin_x=5, margi
     
     # Calculate the adjusted position for the pasted text with margins
     adjusted_position = (position[0] - rotated_bbox[0] + margin_x,
-                         position[1] - rotated_bbox[1] + margin_y)
+                         position[1] - rotated_bbox[1])
     
     # Paste the rotated text onto the main image using the mask
     image.paste(rotated_text_img, adjusted_position, mask=rotated_text_img)
@@ -78,27 +79,27 @@ def elastic_transform(image, alpha, sigma):
 
 def generate_captcha():
     # Increase the size of the captcha image
-    width, height = 150, 50
+    width, height = 250, 60
     captcha = Image.new('RGB', (width, height), color='white')
     draw = ImageDraw.Draw(captcha)
 
     # Set a specific font size and use Carlito font
-    font_size = 25
+    font_size = 40
     font_path = "Carlito-Bold.ttf"
     font = ImageFont.truetype(font_path, font_size)
 
     captcha_text = generate_random_string(random.randint(6, 10))
     
-    # Adjust the starting position calculation
-    text_position = ((width - captcha.width) // 2, (height - captcha.height) // 2)
-    text_color = (random.randint(0, 128), random.randint(0, 128), random.randint(0, 128))
+    # Adjust the starting position calculation to place text at the upper part
+    text_position = ((width - captcha.width) // 2, 10)  # Adjust the vertical position here
+    text_color = (random.randint(0, 80), random.randint(0, 80), random.randint(0, 80))
     text_angle = random.randint(-10, 10)
 
     # Draw the rotated text with margins
     draw_text(draw, captcha, captcha_text, font, text_position, text_color, text_angle, margin_x=25, margin_y=25)
 
     draw_spots(draw, width, height, 2000)
-    draw_lines(draw, width, height, 20)
+    draw_lines(draw, width, height, 15)
 
     # Convert image to RGBA before applying elastic transformation
     captcha = captcha.convert('RGBA')
@@ -127,30 +128,17 @@ def generate_captcha_data(num_captchas):
         image_bytes.seek(0)  # Reset the buffer position to the beginning
 
         # Append captcha data to the list
-        captcha_data.append({'image': {'bytes': image_bytes, 'name': f'captcha_{i}.png'}, 'text': f"This is '{captcha_text}'"})
-
-
-        # Append captcha data to the list
-        captcha_data.append({'image': {'bytes': image_bytes, 'name': f'captcha_{i}.png'}, 'text': f"This is '{captcha_text}'"})
+        captcha_data.append({'image':{'bytes': image_bytes.getvalue(), 'path': f'{captcha_text}.png'}, 'text': f"This is '{captcha_text}'"})
 
     return captcha_data
 
+
 if __name__ == "__main__":
-    num_captchas = 300
+    num_captchas = 50000
     captcha_data = generate_captcha_data(num_captchas)
 
     # Create DataFrame from captcha data
     df = pd.DataFrame(captcha_data)
 
-    # Save DataFrame to a CSV file
-    df.to_csv('captchas.csv', index=False)
-
-    # Load a random captcha from the DataFrame
-    # random_captcha = df.sample(n=1)
-    # print(random_captcha)
-    # # Display the loaded captcha image
-    # captcha_image = Image.open(BytesIO(random_captcha['image']['bytes']))
-    # captcha_image.save('captha.png')
-
-    # # Print the corresponding text
-    # print(random_captcha['text'])
+    # Save the DataFrame
+    df.to_csv('captchas.csv')

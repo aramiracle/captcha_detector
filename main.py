@@ -29,5 +29,4 @@ if __name__ == "__main__":
     save_folder = "saved_models/cnn"  # Adjust the path if necessary
     captcha_visualizer = CaptchaVisualizer(device, num_classes, image_size, save_folder)
     latest_model = captcha_visualizer.load_latest_model()
-    test_dataloader = captcha_visualizer.load_test_data('dataset.csv')
     captcha_visualizer.visualize_predictions(latest_model, test_dataloader)
