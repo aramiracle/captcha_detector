@@ -6,7 +6,7 @@ from torchvision import transforms
 import pandas as pd
 from io import BytesIO
 from tqdm import tqdm
-import ast
+import os
 
 def generate_random_string(length):
     return ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(length))
@@ -79,12 +79,12 @@ def elastic_transform(image, alpha, sigma):
 
 def generate_captcha():
     # Increase the size of the captcha image
-    width, height = 250, 60
+    width, height = 300, 80
     captcha = Image.new('RGB', (width, height), color='white')
     draw = ImageDraw.Draw(captcha)
 
     # Set a specific font size and use Carlito font
-    font_size = 40
+    font_size = 30
     font_path = "Carlito-Bold.ttf"
     font = ImageFont.truetype(font_path, font_size)
 
@@ -98,14 +98,17 @@ def generate_captcha():
     # Draw the rotated text with margins
     draw_text(draw, captcha, captcha_text, font, text_position, text_color, text_angle, margin_x=25, margin_y=25)
 
-    draw_spots(draw, width, height, 2000)
-    draw_lines(draw, width, height, 15)
+    draw_spots(draw, width, height, 5000)
+    draw_lines(draw, width, height, 20)
+
+    # Resize to half size to save memory
+    captcha = captcha.resize((width // 3 * 2, height // 3 * 2))
 
     # Convert image to RGBA before applying elastic transformation
     captcha = captcha.convert('RGBA')
 
     # Apply random elastic transformation
-    captcha = elastic_transform(captcha, alpha=50.0, sigma=5.0)
+    captcha = elastic_transform(captcha, alpha=30.0, sigma=3.0)
 
     # Convert image back to RGB after elastic transformation
     captcha = captcha.convert('RGB')
@@ -134,7 +137,7 @@ def generate_captcha_data(num_captchas):
 
 
 if __name__ == "__main__":
-    num_captchas = 50000
+    num_captchas = 30000
     captcha_data = generate_captcha_data(num_captchas)
 
     # Create DataFrame from captcha data
@@ -142,3 +145,21 @@ if __name__ == "__main__":
 
     # Save the DataFrame
     df.to_csv('captchas.csv')
+
+    # Choose a random index from the DataFrame
+    random_index = random.randint(0, len(df) - 1)
+
+    # Get the captcha image bytes and path from the selected index
+    captcha_image_bytes = df.loc[random_index, 'image']['bytes']
+    captcha_image_path = df.loc[random_index, 'image']['path']
+
+    # Create a directory to save the captcha images if it doesn't exist
+    save_directory = 'saved_captchas'
+    os.makedirs(save_directory, exist_ok=True)
+
+    # Save the captcha image to a file
+    with open(os.path.join(save_directory, captcha_image_path), 'wb') as image_file:
+        image_file.write(captcha_image_bytes)
+
+    print(f"Captcha image saved at: {os.path.join(save_directory, captcha_image_path)}")
+

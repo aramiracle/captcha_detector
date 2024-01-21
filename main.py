@@ -10,7 +10,7 @@ if __name__ == "__main__":
     num_classes = 36  # 26 letters + 10 digits
     learning_rate = 0.001
     num_epochs = 1
-    image_size = (80, 80)
+    image_size = (100, 100)
     batch_size = 200
     save_folder='saved_models/cnn'
 
