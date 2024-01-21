@@ -79,12 +79,12 @@ def elastic_transform(image, alpha, sigma):
 
 def generate_captcha():
     # Increase the size of the captcha image
-    width, height = 300, 80
+    width, height = 360, 120
     captcha = Image.new('RGB', (width, height), color='white')
     draw = ImageDraw.Draw(captcha)
 
     # Set a specific font size and use Carlito font
-    font_size = 30
+    font_size = 60
     font_path = "Carlito-Bold.ttf"
     font = ImageFont.truetype(font_path, font_size)
 
@@ -92,17 +92,14 @@ def generate_captcha():
     
     # Adjust the starting position calculation to place text at the upper part
     text_position = ((width - captcha.width) // 2, 10)  # Adjust the vertical position here
-    text_color = (random.randint(0, 80), random.randint(0, 80), random.randint(0, 80))
+    text_color = (random.randint(0, 64), random.randint(0, 64), random.randint(0, 64))
     text_angle = random.randint(-10, 10)
 
     # Draw the rotated text with margins
     draw_text(draw, captcha, captcha_text, font, text_position, text_color, text_angle, margin_x=25, margin_y=25)
 
-    draw_spots(draw, width, height, 5000)
+    draw_spots(draw, width, height, 10000)
     draw_lines(draw, width, height, 20)
-
-    # Resize to half size to save memory
-    captcha = captcha.resize((width // 3 * 2, height // 3 * 2))
 
     # Convert image to RGBA before applying elastic transformation
     captcha = captcha.convert('RGBA')
@@ -112,6 +109,9 @@ def generate_captcha():
 
     # Convert image back to RGB after elastic transformation
     captcha = captcha.convert('RGB')
+
+    # Resize to half size to save memory
+    captcha = captcha.resize((width // 3 * 2, height // 3 * 2))
 
     # Apply image smoothing
     captcha = captcha.filter(ImageFilter.SMOOTH)
@@ -135,9 +135,8 @@ def generate_captcha_data(num_captchas):
 
     return captcha_data
 
-
 if __name__ == "__main__":
-    num_captchas = 30000
+    num_captchas = 100000
     captcha_data = generate_captcha_data(num_captchas)
 
     # Create DataFrame from captcha data
