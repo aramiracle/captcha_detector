@@ -32,7 +32,7 @@ def load_data(csv_files, test_size=0.1, random_state=42, batch_size=200, image_s
         transforms.ToTensor()
     ])
 
-    df_downloaded = pd.read_csv(csv_files[0]).iloc[:120000]
+    df_downloaded = pd.read_csv(csv_files[0]).iloc[:100000]
     df_generated = pd.read_csv(csv_files[1]).iloc[:]
     df = pd.concat([df_downloaded, df_generated])
 
@@ -52,11 +52,11 @@ def load_model(num_classes, device, load_latest=True, save_folder="saved_models"
 
     if load_latest:
         # Get a list of all the saved model files
-        model_files = [f for f in os.listdir(save_folder) if f.endswith(".pth")]
+        model_files = [f for f in os.listdir(save_folder) if f.startswith("captcha_model_epoch_")]
 
         if model_files:
             # Find the most recent model file
-            latest_model_file = max(model_files, key=lambda x: os.path.getctime(os.path.join(save_folder, x)))
+            latest_model_file = max(model_files, key=lambda x: int(x.split("_")[-1].split(".")[0]))
 
             # Load the parameters of the most recent model
             model_path = os.path.join(save_folder, latest_model_file)

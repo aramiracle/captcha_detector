@@ -136,7 +136,7 @@ def generate_captcha_data(num_captchas):
     return captcha_data
 
 if __name__ == "__main__":
-    num_captchas = 100000
+    num_captchas = 30000
     captcha_data = generate_captcha_data(num_captchas)
 
     # Create DataFrame from captcha data
