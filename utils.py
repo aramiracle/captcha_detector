@@ -3,18 +3,36 @@ import torch
 from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
 import pandas as pd
+from PIL import Image
 from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 from model import CNNModel  # Import your CRNN model class
 from data_loader import CaptchaDataset  # Import your custom dataset class
 
+class SquarePadAndResize(object):
+    def __init__(self, size, fill=0):
+        self.size = size
+        self.fill = fill
+
+    def __call__(self, img):
+        # Pad the image to make it square
+        w, h = img.size
+        max_size = max(w, h)
+        new_img = Image.new('RGB', (max_size, max_size), color=self.fill)
+        new_img.paste(img, ((max_size - w) // 2, (max_size - h) // 2))
+
+        # Resize the image to the desired size
+        new_img = new_img.resize(self.size, Image.BICUBIC)
+
+        return new_img
+
 def load_data(csv_files, test_size=0.1, random_state=42, batch_size=200, image_size=(100, 100)):
     transform = transforms.Compose([
-        transforms.Resize(image_size),
+        SquarePadAndResize(image_size),
         transforms.ToTensor()
     ])
 
-    df_downloaded = pd.read_csv(csv_files[0]).iloc[:170000]
+    df_downloaded = pd.read_csv(csv_files[0]).iloc[:120000]
     df_generated = pd.read_csv(csv_files[1]).iloc[:]
     df = pd.concat([df_downloaded, df_generated])
 
@@ -27,6 +45,7 @@ def load_data(csv_files, test_size=0.1, random_state=42, batch_size=200, image_s
     test_dataloader = DataLoader(captcha_test_dataset, batch_size=5, shuffle=False)
 
     return train_dataloader, test_dataloader
+
 
 def load_model(num_classes, device, load_latest=True, save_folder="saved_models"):
     model = CNNModel(num_classes).to(device)

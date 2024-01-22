@@ -42,7 +42,7 @@ if __name__ == "__main__":
     char_set = "abcdefghijklmnopqrstuvwxyz0123456789."
     model = load_model(num_classes, device, load_latest=True, save_folder='saved_models/cnn')
 
-    captcha_image_path = 'example03.png'
+    captcha_image_path = 'test_examples/example03.png'
 
     predicted_word, confidence_per_char, total_confidence = predict_captcha(model, captcha_image_path, image_size, device, char_set)
 

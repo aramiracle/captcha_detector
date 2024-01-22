@@ -4,6 +4,7 @@ import torch.optim as optim
 from utils import load_data, load_model, train_model
 from visualize import CaptchaVisualizer
 
+
 if __name__ == "__main__":
     # Set device and hyperparameters
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -12,7 +13,7 @@ if __name__ == "__main__":
     num_epochs = 10
     image_size = (100, 100)
     batch_size = 200
-    save_folder='saved_models/cnn'
+    save_folder = 'saved_models/cnn'
 
     # Load data
     train_dataloader, test_dataloader = load_data(('dataset.csv', 'captchas.csv'), batch_size=batch_size, image_size=image_size)
