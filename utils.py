@@ -67,14 +67,47 @@ def load_model(num_classes, device, load_latest=True, save_folder="saved_models"
 
     return model
 
-def train_model(model, train_dataloader, test_dataloader, criterion, optimizer, num_epochs, save_folder, device):
+def set_requires_grad(model, requires_grad):
+    for param in model.parameters():
+        param.requires_grad = requires_grad
+
+def train_model(model, train_dataloader, test_dataloader, criterion, optimizer, pretrain_epochs, train_epochs, save_folder, device):
     best_train_loss = float('inf')
 
-    for epoch in range(num_epochs):
+    # Pretraining phase
+    model.train()
+    set_requires_grad(model.cnn, False)  # Freeze CNN layers
+
+    for epoch in range(pretrain_epochs):
+        pretrain_loss = 0
+
+        with tqdm(total=len(train_dataloader), desc=f"Pretrain Epoch {epoch + 1}/{pretrain_epochs}", unit="batch") as pbar:
+            for batch_idx, (images, labels) in enumerate(train_dataloader):
+                images, labels = images.to(device), labels.to(device)
+
+                optimizer.zero_grad()
+                outputs = model(images)
+
+                loss = criterion(labels.to(torch.float32), outputs)
+
+                loss.backward()
+                optimizer.step()
+
+                pretrain_loss += loss.item()
+                pbar.update(1)
+
+                average_pretrain_loss = pretrain_loss / (batch_idx + 1)
+                pbar.set_postfix({"Pretrain Loss": average_pretrain_loss})
+                tqdm.write(f"Pretrain Epoch {epoch+1}, Batch {batch_idx+1}/{len(train_dataloader)} - Pretrain Loss: {average_pretrain_loss}")
+
+    set_requires_grad(model.cnn, True)  # Unfreeze CNN layers
+
+    # Training phase
+    for epoch in range(pretrain_epochs, pretrain_epochs + train_epochs):
         model.train()
         train_loss = 0
 
-        with tqdm(total=len(train_dataloader), desc=f"Epoch {epoch + 1}/{num_epochs}", unit="batch") as pbar:
+        with tqdm(total=len(train_dataloader), desc=f"Train Epoch {epoch + 1}/{pretrain_epochs + train_epochs}", unit="batch") as pbar:
             for batch_idx, (images, labels) in enumerate(train_dataloader):
                 images, labels = images.to(device), labels.to(device)
 
@@ -91,15 +124,16 @@ def train_model(model, train_dataloader, test_dataloader, criterion, optimizer, 
 
                 average_train_loss = train_loss / (batch_idx + 1)
                 pbar.set_postfix({"Train Loss": average_train_loss})
-                tqdm.write(f"Epoch {epoch+1}, Batch {batch_idx+1}/{len(train_dataloader)} - Train Loss: {average_train_loss}")
+                tqdm.write(f"Train Epoch {epoch+1}, Batch {batch_idx+1}/{len(train_dataloader)} - Train Loss: {average_train_loss}")
 
                 if average_train_loss < best_train_loss:
                     best_train_loss = average_train_loss
-                    print(f"Epoch {epoch+1} - Best training loss so far: {best_train_loss}")
+                    print(f"Train Epoch {epoch+1} - Best training loss so far: {best_train_loss}")
 
             save_path = os.path.join(save_folder, f"captcha_model_epoch_{epoch+1}.pth")
             torch.save(model.state_dict(), save_path)
 
+        # Validation phase
         model.eval()
         test_loss = 0
 
@@ -118,6 +152,6 @@ def train_model(model, train_dataloader, test_dataloader, criterion, optimizer, 
             average_test_loss = test_loss / len(test_dataloader)
             pbar.set_postfix({"Train Loss": average_train_loss, "Validation Loss": average_test_loss})
 
-        tqdm.write(f"\nEpoch {epoch+1}/{num_epochs} Summary:")
+        tqdm.write(f"\nEpoch {epoch+1}/{pretrain_epochs + train_epochs} Summary:")
         tqdm.write(f"  Train Loss: {average_train_loss}")
         tqdm.write(f"  Validation Loss: {average_test_loss}")
