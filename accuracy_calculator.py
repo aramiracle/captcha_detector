@@ -10,21 +10,18 @@ def predict_captcha(model, images, device, char_set):
     with torch.no_grad():
         outputs = model(images)
 
-    predicted_classes = torch.argmax(outputs, dim=1)
+    predicted_classes = torch.argmax(outputs, dim=2)
 
     # Convert the generator expression to a list comprehension
-    predicted_words = [''.join([char_set[class_idx] for class_idx in pred]) for pred in predicted_classes]
+    predicted_text = [decode_predictions(predicted_classes[i, :], char_set) for i in range(images.size(0))]
     
     # Remove dot ('.') from each predicted word
-    predicted_words = [word.replace('.', '') for word in predicted_words]
+    predicted_text = [text.replace('.', '') for text in predicted_text]
 
-    return predicted_words
+    return predicted_text
 
-def calculate_accuracy(predictions, ground_truth_labels):
-    correct_predictions = sum(1 for pred, truth in zip(predictions, ground_truth_labels) if pred == truth)
-    total_samples = len(ground_truth_labels)
-    accuracy = correct_predictions / total_samples
-    return accuracy
+def decode_predictions(predicted_class, char_set):
+        return "".join([char_set[predicted_class[idx]] for idx in range(predicted_class.size(0))])
 
 # Function to convert one-hot encoded tensor to alphanumeric text
 def onehot_to_alphanumeric(tensor, char_set):
@@ -34,16 +31,20 @@ def onehot_to_alphanumeric(tensor, char_set):
     alphanumeric_str = alphanumeric_str.replace('.', '')
     return alphanumeric_str
 
+def calculate_accuracy(predictions, ground_truth_labels):
+    correct_predictions = sum(1 for pred_batch, truth_batch in zip(predictions, ground_truth_labels) 
+                             for pred, truth in zip(pred_batch, truth_batch) if pred == truth)
+    total_samples = sum(len(truth_batch) for truth_batch in ground_truth_labels)
+    accuracy = correct_predictions / total_samples
+    return accuracy
+
 def calculate_cer(predictions, ground_truth_labels):
-    # Flatten the nested lists
     flat_predictions = [item for sublist in predictions for item in sublist]
     flat_ground_truth_labels = [item for sublist in ground_truth_labels for item in sublist]
 
-    # Calculate CER using jiwer.wer
     cer = jiwer.cer(flat_ground_truth_labels, flat_predictions)
     
     return cer
-
 
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -61,7 +62,7 @@ if __name__ == "__main__":
     with torch.no_grad(), tqdm(total=len(test_dataloader), desc="Testing", unit="batch") as pbar:
         for images, labels in test_dataloader:
             images, labels = images.to(device), labels.to(device)
-            batch_predictions_text = predict_captcha(model, images, device, char_set)[0]
+            batch_predictions_text = predict_captcha(model, images, device, char_set)
 
             predictions.append(batch_predictions_text)
             
@@ -71,11 +72,9 @@ if __name__ == "__main__":
             
             pbar.update(1)
 
-    print(f'Predictions: {predictions[0]}')
-    print(f'Groun Truths: {ground_truth_labels[0]}')
     # Calculate accuracy and CER
     accuracy = calculate_accuracy(predictions, ground_truth_labels)
-    # cer = calculate_cer(predictions, ground_truth_labels)
+    cer = calculate_cer(predictions, ground_truth_labels)
 
     print(f"Accuracy: {accuracy * 100:.4f}%")
-    # print(f"Character Error Rate (CER): {cer * 100:.4f}%")
+    print(f"Character Error Rate (CER): {cer * 100:.4f}%")

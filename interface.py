@@ -1,6 +1,6 @@
 import gradio as gr
 from PIL import Image
-from utils import load_model
+from utils import SquarePadAndResize, load_model
 import torchvision.transforms as transforms
 import torch
 
@@ -8,7 +8,7 @@ import torch
 def preprocess_image(image):
     image_size = (100, 100)
     transform = transforms.Compose([
-        transforms.Resize(image_size),
+        SquarePadAndResize(image_size),
         transforms.ToTensor()
     ])
     image = Image.fromarray(image.astype('uint8'))
