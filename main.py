@@ -20,12 +20,12 @@ if __name__ == "__main__":
     train_dataloader, test_dataloader = load_data(('dataset.csv', 'captchas.csv'), batch_size=batch_size, image_size=image_size)
 
     # Load model
-    model = load_model(num_classes, device, load_latest=True, save_folder=save_folder)
+    model, max_saved_epoch = load_model(num_classes, device, load_latest=True, save_folder=save_folder)
     criterion = nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
     # Train model
-    train_model(model, train_dataloader, test_dataloader, criterion, optimizer, num_pre_epochs, num_epochs, save_folder, device)
+    train_model(model, max_saved_epoch, train_dataloader, test_dataloader, criterion, optimizer, num_pre_epochs, num_epochs, save_folder, device)
 
     # Visualize predictions
     save_folder = "saved_models/cnn"  # Adjust the path if necessary
