@@ -105,13 +105,13 @@ def generate_captcha():
     captcha = captcha.convert('RGBA')
 
     # Apply random elastic transformation
-    captcha = elastic_transform(captcha, alpha=30.0, sigma=3.0)
+    captcha = elastic_transform(captcha, alpha=60.0, sigma=10.0)
 
     # Convert image back to RGB after elastic transformation
     captcha = captcha.convert('RGB')
 
     # Resize to half size to save memory
-    captcha = captcha.resize((width // 3 * 2, height // 3 * 2))
+    captcha = captcha.resize((width // 2, height // 2))
 
     # Apply image smoothing
     captcha = captcha.filter(ImageFilter.SMOOTH)
@@ -136,7 +136,7 @@ def generate_captcha_data(num_captchas):
     return captcha_data
 
 if __name__ == "__main__":
-    num_captchas = 30000
+    num_captchas = 100000
     captcha_data = generate_captcha_data(num_captchas)
 
     # Create DataFrame from captcha data

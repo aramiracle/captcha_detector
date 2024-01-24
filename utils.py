@@ -32,8 +32,8 @@ def load_data(csv_files, test_size=0.1, random_state=42, batch_size=200, image_s
         transforms.ToTensor()
     ])
 
-    df_downloaded = pd.read_csv(csv_files[0]).iloc[:100000]
-    df_generated = pd.read_csv(csv_files[1]).iloc[:]
+    df_downloaded = pd.read_csv(csv_files[0])
+    df_generated = pd.read_csv(csv_files[1])
     df = pd.concat([df_downloaded, df_generated])
 
     df_train, df_test = train_test_split(df, test_size=test_size, random_state=random_state, shuffle=True)

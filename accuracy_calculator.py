@@ -51,7 +51,7 @@ if __name__ == "__main__":
     num_classes = 36  # 26 letters + 10 digits
     image_size = (100, 100)
     char_set = "abcdefghijklmnopqrstuvwxyz0123456789."
-    model = load_model(num_classes, device, load_latest=True, save_folder='saved_models/cnn')
+    model, _ = load_model(num_classes, device, load_latest=True, save_folder='saved_models/cnn')
 
     # Load test dataset using load_data function
     _, test_dataloader = load_data(('dataset.csv', 'captchas.csv'), test_size=0.1, random_state=42, batch_size=1000, image_size=image_size)

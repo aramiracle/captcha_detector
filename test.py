@@ -61,7 +61,7 @@ if __name__ == "__main__":
     num_classes = 36  # 26 letters + 10 digits
     image_size = (100, 100)
     char_set = "abcdefghijklmnopqrstuvwxyz0123456789."
-    model = load_model(num_classes, device, load_latest=True, save_folder='saved_models/cnn')
+    model, _ = load_model(num_classes, device, load_latest=True, save_folder='saved_models/cnn')
 
     directory_path = 'captcha_examples'
 
