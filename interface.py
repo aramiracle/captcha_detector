@@ -3,6 +3,7 @@ from PIL import Image
 from utils import SquarePadAndResize, load_model
 import torchvision.transforms as transforms
 import torch
+import os
 
 # Function to preprocess the image before feeding it to the model
 def preprocess_image(image):
@@ -46,7 +47,7 @@ def detect_captcha(image):
     num_classes = 36  # 26 letters + 10 digits
     save_folder = 'saved_models/cnn'
 
-    captcha_model = load_model(num_classes, device, load_latest=True, save_folder=save_folder)
+    captcha_model, _ = load_model(num_classes, device, load_latest=True, save_folder=save_folder)
 
     # Perform prediction using your captcha model
     predicted_text, total_confidence = predict_captcha(captcha_model, input_data)
@@ -56,16 +57,22 @@ def detect_captcha(image):
 
     return predicted_text_without_dots, {'Total confidence': total_confidence}
 
-# Create a Gradio interface
 iface = gr.Interface(
     fn=detect_captcha,
     inputs=gr.Image(),
     outputs=[
-        gr.Textbox(label="Predicted Text"),
-        gr.Label(label="Total Confidence", num_top_classes=1)
+        gr.Textbox(label="Output 🤖"),
+        gr.Label(label="Total Confidence 🔍", num_top_classes=1)
     ],
-    title="Captcha Detection",
-    description="Upload an image with a captcha to detect the text.",
+    examples=[
+        os.path.join('captcha_examples', 'example01.png'),
+        os.path.join('captcha_examples', 'example02.png'),
+        os.path.join('captcha_examples', 'example03.png'),
+        os.path.join('captcha_examples', 'example04.png'),
+        os.path.join('captcha_examples', 'example05.png'),
+    ],
+    title="Captcha Detection 🕵️‍♂️",
+    description="Welcome to the Captcha Detection System! 🚀\n\nUpload an image with a captcha, and let our model decipher the text. The model is trained to recognize letters and digits in the captcha. 🧠💡\n\nSee how accurate it is and enjoy the magic of AI! ✨🔮",
 )
 
 # Launch the interface
