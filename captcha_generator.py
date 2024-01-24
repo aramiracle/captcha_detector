@@ -104,7 +104,7 @@ def generate_captcha():
     captcha = captcha.convert('RGBA')
 
     # Apply random elastic transformation
-    captcha = elastic_transform(captcha, alpha=60.0, sigma=10.0)
+    captcha = elastic_transform(captcha, alpha=75.0, sigma=10.0)
 
     # Convert image back to RGB after elastic transformation
     captcha = captcha.convert('RGB')
@@ -155,5 +155,3 @@ if __name__ == "__main__":
 
     # Save the Arrow Table as Parquet
     pq.write_table(arrow_table, 'captchas.parquet')
-
-    pq.read_table('captchas.parquet').to_pandas().to_csv('captchas.csv')
