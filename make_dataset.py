@@ -29,5 +29,3 @@ if __name__ == '__main__':
     parquet_folder = 'data'
     parquet_filename = 'dataset.parquet'
     parquet_to_parquet(parquet_folder, parquet_filename)
-    df_downloaded = pq.read_table(parquet_filename).flatten().to_pandas()
-    print(df_downloaded.head())
