@@ -3,10 +3,10 @@ import string
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 from math import sin, radians
 from torchvision import transforms
-import pandas as pd
 from io import BytesIO
-from tqdm import tqdm
-import os
+import pyarrow as pa
+import pyarrow.parquet as pq
+import pandas as pd
 
 def generate_random_string(length):
     return ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(length))
@@ -43,7 +43,6 @@ def draw_text(draw, image, text, font, position, color, angle, margin_x=5, margi
     
     # Paste the rotated text onto the main image using the mask
     image.paste(rotated_text_img, adjusted_position, mask=rotated_text_img)
-
 
 def draw_spots(draw, width, height, num_spots):
     for _ in range(num_spots):
@@ -116,22 +115,26 @@ def generate_captcha():
     # Apply image smoothing
     captcha = captcha.filter(ImageFilter.SMOOTH)
 
-    return captcha, captcha_text
+    # Generate a file name based on the captcha text
+    file_name = f"{captcha_text}.png"
+
+    # Convert image to binary bytes
+    image_bytes = BytesIO()
+    captcha.save(image_bytes, format='PNG')
+    image_bytes.seek(0)  # Reset the buffer position to the beginning
+
+    # Return a dictionary with bytes and file_name as a string
+    return repr({'bytes': image_bytes.getvalue().hex(), 'path': file_name}), f"This is '{captcha_text}'"
 
 def generate_captcha_data(num_captchas):
     captcha_data = []
 
-    for i in tqdm(range(num_captchas), desc="Generating Captchas", unit="captcha"):
+    for i in range(num_captchas):
         # Generate captcha
-        captcha, captcha_text = generate_captcha()
-
-        # Convert captcha image to binary bytes
-        image_bytes = BytesIO()
-        captcha.save(image_bytes, format='PNG')
-        image_bytes.seek(0)  # Reset the buffer position to the beginning
+        captcha_info, text = generate_captcha()
 
         # Append captcha data to the list
-        captcha_data.append({'image':{'bytes': image_bytes.getvalue(), 'path': f'{captcha_text}.png'}, 'text': f"This is '{captcha_text}'"})
+        captcha_data.append({'image': captcha_info, 'text': text})
 
     return captcha_data
 
@@ -139,26 +142,18 @@ if __name__ == "__main__":
     num_captchas = 100000
     captcha_data = generate_captcha_data(num_captchas)
 
-    # Create DataFrame from captcha data
-    df = pd.DataFrame(captcha_data)
+    # Create Arrow Table from captcha data
+    schema = pa.schema([
+        ('image', pa.string()),
+        ('text', pa.string())
+    ])
+    arrow_data = [
+        pa.array([item['image'] for item in captcha_data]),
+        pa.array([item['text'] for item in captcha_data])
+    ]
+    arrow_table = pa.Table.from_arrays(arrow_data, schema=schema).flatten()
 
-    # Save the DataFrame
-    df.to_csv('captchas.csv')
+    # Save the Arrow Table as Parquet
+    pq.write_table(arrow_table, 'captchas.parquet')
 
-    # Choose a random index from the DataFrame
-    random_index = random.randint(0, len(df) - 1)
-
-    # Get the captcha image bytes and path from the selected index
-    captcha_image_bytes = df.loc[random_index, 'image']['bytes']
-    captcha_image_path = df.loc[random_index, 'image']['path']
-
-    # Create a directory to save the captcha images if it doesn't exist
-    save_directory = 'saved_captchas'
-    os.makedirs(save_directory, exist_ok=True)
-
-    # Save the captcha image to a file
-    with open(os.path.join(save_directory, captcha_image_path), 'wb') as image_file:
-        image_file.write(captcha_image_bytes)
-
-    print(f"Captcha image saved at: {os.path.join(save_directory, captcha_image_path)}")
-
+    pq.read_table('captchas.parquet').to_pandas().to_csv('captchas.csv')

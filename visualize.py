@@ -1,11 +1,8 @@
 import os
 import torch
-from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
-import pandas as pd
 from sklearn.model_selection import train_test_split
 from model import CNNModel  # Import your CRNN model class
-from data_loader import CaptchaDataset  # Import your custom dataset class
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -32,20 +29,6 @@ class CaptchaVisualizer:
         model.eval()  # Set the model to evaluation mode
 
         return model
-
-    def load_test_data(self, csv_file, test_size=0.1, random_state=42, batch_size=5):
-        transform = transforms.Compose([
-            transforms.Resize(self.image_size),
-            transforms.ToTensor()
-        ])
-
-        df = pd.read_csv(csv_file)
-        _, df_test = train_test_split(df, test_size=test_size, random_state=random_state)
-
-        captcha_test_dataset = CaptchaDataset(df_test, transform=transform)
-        test_dataloader = DataLoader(captcha_test_dataset, batch_size=batch_size, shuffle=True)
-
-        return test_dataloader
 
     def decode_labels(self, labels_indices):
         return ["".join([self.index_to_char_mapping[idx.item()] for idx in labels_indices])]
@@ -95,23 +78,3 @@ class CaptchaVisualizer:
 
                 plt.tight_layout()
                 plt.show()
-
-
-if __name__ == "__main__":
-    # Set device and hyperparameters
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    num_classes = 36  # 26 letters + 10 digits
-    image_size = (100, 100)
-    save_folder = "saved_models/cnn"
-
-    # Create CaptchaVisualizer instance
-    captcha_visualizer = CaptchaVisualizer(device, num_classes, image_size, save_folder)
-
-    # Load the latest model
-    model = captcha_visualizer.load_latest_model()
-
-    # Load test data
-    test_dataloader = captcha_visualizer.load_test_data('dataset.csv')
-
-    # Visualize predictions
-    captcha_visualizer.visualize_predictions(model, test_dataloader)

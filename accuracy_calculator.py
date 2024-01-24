@@ -54,7 +54,7 @@ if __name__ == "__main__":
     model, _ = load_model(num_classes, device, load_latest=True, save_folder='saved_models/cnn')
 
     # Load test dataset using load_data function
-    _, test_dataloader = load_data(('dataset.csv', 'captchas.csv'), test_size=0.1, random_state=42, batch_size=1000, image_size=image_size)
+    _, test_dataloader = load_data(('dataset.parquet', 'captchas.parquet'), test_size=0.1, random_state=42, batch_size=1000, image_size=image_size)
 
     # Get predictions for the test dataset
     predictions = []

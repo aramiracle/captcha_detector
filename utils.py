@@ -3,6 +3,7 @@ import torch
 from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
 import pandas as pd
+import pyarrow.parquet as pq
 from PIL import Image
 from sklearn.model_selection import train_test_split
 from tqdm import tqdm
@@ -26,14 +27,14 @@ class SquarePadAndResize(object):
 
         return new_img
 
-def load_data(csv_files, test_size=0.1, random_state=42, batch_size=200, image_size=(100, 100)):
+def load_data(parquet_files, test_size=0.1, random_state=42, batch_size=200, image_size=(100, 100)):
     transform = transforms.Compose([
         SquarePadAndResize(image_size),
         transforms.ToTensor()
     ])
 
-    df_downloaded = pd.read_csv(csv_files[0])
-    df_generated = pd.read_csv(csv_files[1])
+    df_downloaded = pq.read_table(parquet_files[0]).to_pandas()
+    df_generated = pq.read_table(parquet_files[1]).to_pandas()
     df = pd.concat([df_downloaded, df_generated])
 
     df_train, df_test = train_test_split(df, test_size=test_size, random_state=random_state, shuffle=True)

@@ -1,7 +1,8 @@
-import pandas as pd
 import os
+import pyarrow as pa
+import pyarrow.parquet as pq
 
-def parquet_to_csv(parquet_folder, csv_filename):
+def parquet_to_parquet(parquet_folder, parquet_filename):
     # Get a list of all parquet files in the specified folder
     parquet_files = [f for f in os.listdir(parquet_folder) if f.endswith('.parquet')]
 
@@ -10,18 +11,23 @@ def parquet_to_csv(parquet_folder, csv_filename):
         print("No Parquet files found in the specified folder.")
         return
 
-    # Create a list comprehension to read each parquet file into a DataFrame
-    dfs = [pd.read_parquet(os.path.join(parquet_folder, parquet_file)) for parquet_file in parquet_files]
+    # Create a list comprehension to read each parquet file into a PyArrow Table
+    tables = [pq.read_table(os.path.join(parquet_folder, parquet_file)) for parquet_file in parquet_files]
 
-    # Concatenate all DataFrames in the list
-    combined_data = pd.concat(dfs, ignore_index=True)
+    # Concatenate all Tables in the list
+    combined_table = pa.concat_tables(tables)
 
-    # Save the combined data as a CSV file
-    combined_data.to_csv(csv_filename, index=False)
+    # Flatten any nested structures in the table
+    flattened_table = combined_table.flatten()
 
-    print(f"Combined data saved to {csv_filename}")
+    # Save the flattened table as a Parquet file
+    pq.write_table(flattened_table, parquet_filename)
+
+    print(f"Combined and flattened data saved to {parquet_filename}")
 
 if __name__ == '__main__':
     parquet_folder = 'data'
-    csv_filename = 'dataset.csv'
-    parquet_to_csv(parquet_folder, csv_filename)
+    parquet_filename = 'dataset.parquet'
+    parquet_to_parquet(parquet_folder, parquet_filename)
+    df_downloaded = pq.read_table(parquet_filename).flatten().to_pandas()
+    print(df_downloaded.head())

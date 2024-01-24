@@ -17,21 +17,18 @@ class CaptchaDataset(Dataset):
         return len(self.dataframe)
 
     def __getitem__(self, idx):
-        img_dict = self.dataframe.iloc[idx]['image']
-        if isinstance(img_dict, str):
-            img_bytes = ast.literal_eval(img_dict)['bytes']
-        else:
-            img_bytes = img_dict.values[0]['bytes']
+        img_bytes = self.dataframe.iloc[idx]['image.bytes']
 
         label_string = self.dataframe.iloc[idx]['text']
         label_chars = re.findall(r"'(.*?)'", label_string)[0].lower()
-        label = self.convert_label_to_sequence(label_chars)
 
         img = Image.open(io.BytesIO(img_bytes)).convert('RGB')
         img_tensor = transforms.ToTensor()(img)
 
-        if torch.all(img_tensor == 0):
+        if torch.all(img_tensor == 0) or not label_chars.isalnum():
             return self.__getitem__((idx + 1) % len(self))
+
+        label = self.convert_label_to_sequence(label_chars)
 
         if self.transform:
             img = self.transform(img)
