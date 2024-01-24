@@ -6,7 +6,7 @@ from torchvision import transforms
 from io import BytesIO
 import pyarrow as pa
 import pyarrow.parquet as pq
-import pandas as pd
+from tqdm import tqdm
 
 def generate_random_string(length):
     return ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(length))
@@ -129,7 +129,7 @@ def generate_captcha():
 def generate_captcha_data(num_captchas):
     captcha_data = []
 
-    for i in range(num_captchas):
+    for i in tqdm(range(num_captchas), desc="Generating Captchas"):
         # Generate captcha
         captcha_info, text = generate_captcha()
 
