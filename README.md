@@ -122,7 +122,7 @@ This script is dedicated to visualizing predictions and includes a class `Captch
 
 ## How to Use
 
-1. Ensure the required dependencies are installed (PyTorch, torchvision, pandas, tqdm, matplotlib, numpy, gradio). Install dependencies using `pip install -r requirements.txt`.
+1. Ensure the required dependencies are installed. Install dependencies using `pip install -r requirements.txt`.
 
 2. Adjust hyperparameters, file paths, and other configurations in `main.py` based on your dataset and preferences.
 
@@ -137,10 +137,14 @@ This script is dedicated to visualizing predictions and includes a class `Captch
 - PyTorch
 - torchvision
 - pandas
+- pyarrow
 - tqdm
 - matplotlib
 - numpy
 - gradio
+- scikit-learn
+- jiwer
+- pillow
 
 ## Notes
 
