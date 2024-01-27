@@ -98,7 +98,7 @@ def generate_captcha():
     draw_text(draw, captcha, captcha_text, font, text_position, text_color, text_angle, margin_x=25, margin_y=25)
 
     draw_spots(draw, width, height, 10000)
-    draw_lines(draw, width, height, 20)
+    draw_lines(draw, width, height, 25)
 
     # Convert image to RGBA before applying elastic transformation
     captcha = captcha.convert('RGBA')
@@ -110,7 +110,7 @@ def generate_captcha():
     captcha = captcha.convert('RGB')
 
     # Resize to half size to save memory
-    captcha = captcha.resize((width // 2, height // 2))
+    captcha = captcha.resize((width // 3, height // 3))
 
     # Apply image smoothing
     captcha = captcha.filter(ImageFilter.SMOOTH)
@@ -124,34 +124,39 @@ def generate_captcha():
     image_bytes.seek(0)  # Reset the buffer position to the beginning
 
     # Return a dictionary with bytes and file_name as a string
-    return repr({'bytes': image_bytes.getvalue().hex(), 'path': file_name}), f"This is '{captcha_text}'"
+    return image_bytes.getvalue(), file_name, f"This is '{captcha_text}'"
 
 def generate_captcha_data(num_captchas):
     captcha_data = []
 
     for i in tqdm(range(num_captchas), desc="Generating Captchas"):
         # Generate captcha
-        captcha_info, text = generate_captcha()
+        captcha_bytes, file_name, text = generate_captcha()
 
         # Append captcha data to the list
-        captcha_data.append({'image': captcha_info, 'text': text})
+        captcha_data.append({'image.bytes': captcha_bytes, 'image.path':file_name, 'text': text})
 
     return captcha_data
 
 if __name__ == "__main__":
-    num_captchas = 100000
+    num_captchas = 200000
+    filename = 'captchas.parquet'
     captcha_data = generate_captcha_data(num_captchas)
 
     # Create Arrow Table from captcha data
     schema = pa.schema([
-        ('image', pa.string()),
+        ('image.bytes', pa.binary()),
+        ('image.path', pa.string()),
         ('text', pa.string())
     ])
     arrow_data = [
-        pa.array([item['image'] for item in captcha_data]),
+        pa.array([item['image.bytes'] for item in captcha_data]),
+        pa.array([item['image.path'] for item in captcha_data]),
         pa.array([item['text'] for item in captcha_data])
     ]
-    arrow_table = pa.Table.from_arrays(arrow_data, schema=schema).flatten()
+    arrow_table = pa.Table.from_arrays(arrow_data, schema=schema)
 
     # Save the Arrow Table as Parquet
-    pq.write_table(arrow_table, 'captchas.parquet')
+    pq.write_table(arrow_table, filename)
+
+    # pq.read_table(filename).to_pandas().head().to_csv('captchas.csv')

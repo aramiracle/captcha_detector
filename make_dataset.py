@@ -15,13 +15,10 @@ def parquet_to_parquet(parquet_folder, parquet_filename):
     tables = [pq.read_table(os.path.join(parquet_folder, parquet_file)) for parquet_file in parquet_files]
 
     # Concatenate all Tables in the list
-    combined_table = pa.concat_tables(tables)
-
-    # Flatten any nested structures in the table
-    flattened_table = combined_table.flatten()
+    combined_table = pa.concat_tables(tables).flatten()
 
     # Save the flattened table as a Parquet file
-    pq.write_table(flattened_table, parquet_filename)
+    pq.write_table(combined_table, parquet_filename)
 
     print(f"Combined and flattened data saved to {parquet_filename}")
 
@@ -29,3 +26,4 @@ if __name__ == '__main__':
     parquet_folder = 'data'
     parquet_filename = 'dataset.parquet'
     parquet_to_parquet(parquet_folder, parquet_filename)
+    # pq.read_table(parquet_filename).to_pandas().head().to_csv('dataset.csv')

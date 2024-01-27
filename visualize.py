@@ -64,8 +64,8 @@ class CaptchaVisualizer:
                 total_confidences = [np.prod(self.get_confidence_per_char(j, outputs, outputs_indices[j]))
                                     for j in range(images.size(0))]
 
-                # Calculate negative logarithm (base 10 or base e) of the confidence values
-                neg_log_confidences = [-np.log(confidence) for confidence in total_confidences]
+                # Check correctness of predictions
+                correct_predictions = [true[0] == pred for true, pred in zip(true_labels, predictions)]
 
                 # Visualize each batch in a single window
                 fig, axs = plt.subplots(images.size(0), 1, figsize=(8, 2 * images.size(0)))
@@ -73,8 +73,11 @@ class CaptchaVisualizer:
                 for j in range(images.size(0)):
                     ax = axs[j]
                     image = transforms.ToPILImage()(images[j].cpu())
+                    title = f"True: {true_labels[j][0]}, Predicted: {predictions[j]}, " \
+                            f"Total confidence: {total_confidences[j]:.4f}, " \
+                            f"{'Correct' if correct_predictions[j] else 'Incorrect'}"
                     ax.imshow(np.array(image))
-                    ax.set_title(f"True: {true_labels[j]}, Predicted: {predictions[j]}, -log(Confidence): {neg_log_confidences[j]:.2f}, Total confidence: {total_confidences[j]:.4f}")
+                    ax.set_title(title)
 
                 plt.tight_layout()
                 plt.show()
