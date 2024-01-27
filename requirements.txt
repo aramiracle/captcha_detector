@@ -1,0 +1,11 @@
+torch==2.1.2
+jiwer==3.0.3
+tqdm==4.66.1
+pillow==10.2.0
+pyarrow==15.0.0
+torchvision==0.16.2
+matplotlib==3.8.2
+pandas==2.2.0
+scikit-learn==1.4.0
+numpy==1.26.3
+gradio==4.16.0
