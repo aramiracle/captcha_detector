@@ -53,6 +53,10 @@ This script generates captcha images with random strings, spots, lines, and appl
 - `generate_captcha`: Generates a captcha image and returns binary bytes, file name, and associated text.
 - `generate_captcha_data`: Generates a specified number of captcha images and returns data in a list.
 
+Examples of generated captchas:
+
+![100 generated captchas](saved_captchas_grid/grid_captchas.png)
+
 ### 5. `make_dataset.py`
 
 This script combines multiple Parquet files containing captcha data into a single Parquet file. It is useful for aggregating data from different sources.
