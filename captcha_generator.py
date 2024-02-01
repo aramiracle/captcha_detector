@@ -1,3 +1,4 @@
+import os
 import random
 import string
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
@@ -138,6 +139,36 @@ def generate_captcha_data(num_captchas):
 
     return captcha_data
 
+def save_grid_image(captchas_df, rows=5, cols=20, output_dir='saved_captchas_grid'):
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    images = []
+
+    for _, captcha in captchas_df.iterrows():
+        image_bytes = captcha['image.bytes']
+        image = Image.open(BytesIO(image_bytes))
+        images.append(image)
+
+    max_height = max(image.height for image in images)
+    combined_width = max(image.width for image in images) * cols
+
+    grid_image = Image.new('RGB', (combined_width, max_height * rows), color='white')
+    current_width, current_height = 0, 0
+
+    for image in images:
+        grid_image.paste(image, (current_width, current_height))
+        current_width += image.width
+
+        if current_width >= combined_width:
+            current_width = 0
+            current_height += max_height
+
+    grid_image_path = os.path.join(output_dir, 'grid_captchas.png')
+    grid_image.save(grid_image_path)
+
+    print(f"Grid image saved at: {grid_image_path}")
+
 if __name__ == "__main__":
     num_captchas = 200000
     filename = 'captchas.parquet'
@@ -159,4 +190,6 @@ if __name__ == "__main__":
     # Save the Arrow Table as Parquet
     pq.write_table(arrow_table, filename)
 
-    # pq.read_table(filename).to_pandas().head().to_csv('captchas.csv')
+    # Adjust rows and cols for the grid image
+    rows, cols = 20, 5
+    save_grid_image(arrow_table.to_pandas(), rows=rows, cols=cols)
