@@ -105,7 +105,7 @@ def generate_captcha():
     captcha = captcha.convert('RGBA')
 
     # Apply random elastic transformation
-    captcha = elastic_transform(captcha, alpha=75.0, sigma=10.0)
+    captcha = elastic_transform(captcha, alpha=70.0, sigma=10.0)
 
     # Convert image back to RGB after elastic transformation
     captcha = captcha.convert('RGB')
@@ -170,7 +170,7 @@ def save_grid_image(captchas_df, rows=5, cols=20, output_dir='saved_captchas_gri
     print(f"Grid image saved at: {grid_image_path}")
 
 if __name__ == "__main__":
-    num_captchas = 200000
+    num_captchas = 200
     filename = 'captchas.parquet'
     captcha_data = generate_captcha_data(num_captchas)
 
