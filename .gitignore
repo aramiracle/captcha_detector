@@ -2,6 +2,6 @@ __pycache__
 dataset.parquet
 captchas.parquet
 saved_captchas
-saved_models
+# saved_models
 data
 
