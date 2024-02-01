@@ -170,11 +170,11 @@ def save_grid_image(captchas_df, rows=5, cols=20, output_dir='saved_captchas_gri
     print(f"Grid image saved at: {grid_image_path}")
 
 if __name__ == "__main__":
-    num_captchas = 200
+    num_captchas = 200000
     filename = 'captchas.parquet'
     captcha_data = generate_captcha_data(num_captchas)
 
-    # Create Arrow Table from captcha data
+    # Create Arrow Table from captcha datamit 
     schema = pa.schema([
         ('image.bytes', pa.binary()),
         ('image.path', pa.string()),
