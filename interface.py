@@ -5,6 +5,12 @@ import torchvision.transforms as transforms
 import torch
 import os
 
+# Define a global variable to track whether the model has been loaded
+model_loaded = False
+
+# Global variable to store the loaded model
+captcha_model = None
+
 # Function to preprocess the image before feeding it to the model
 def preprocess_image(image):
     image_size = (100, 100)
@@ -40,14 +46,18 @@ def predict_captcha(model, image):
 
 # Function to perform captcha detection using the model
 def detect_captcha(image):
+    global model_loaded, captcha_model
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     input_data = preprocess_image(image)
 
-    num_classes = 36  # 26 letters + 10 digits
-    save_folder = 'saved_models/cnn'
-
-    captcha_model, _ = load_model(num_classes, device, load_latest=True, save_folder=save_folder)
+    # Load the model only if it hasn't been loaded yet
+    if not model_loaded:
+        num_classes = 36  # 26 letters + 10 digits
+        save_folder = 'saved_models/cnn'
+        captcha_model, _ = load_model(num_classes, device, load_latest=True, save_folder=save_folder)
+        model_loaded = True
 
     # Perform prediction using your captcha model
     predicted_text, total_confidence = predict_captcha(captcha_model, input_data)
