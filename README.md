@@ -8,7 +8,7 @@ This project focuses on implementing a captcha recognition system, providing end
 
 The primary dataset used for training and testing the captcha recognition models can be obtained from the following link:
 
-[Main Dataset on Hugging face](https://huggingface.co/datasets/hammer888/captcha-data)
+[Main Dataset on Hugging Face](https://huggingface.co/datasets/hammer888/captcha-data)
 
 ### Notes:
 
