@@ -39,11 +39,11 @@ This file provides the core model implementations:
 
 This script includes functions for calculating accuracy and Character Error Rate (CER) of the model on a test dataset. It utilizes the loaded model, test dataloader, and various utility functions.
 
-# 4. `captcha_generator.py`
+### 4. `captcha_generator.py`
 
 This Python script is designed to generate captcha images with random strings, spots, lines, and apply elastic transformations. The resulting captchas are stored in a Parquet file along with their associated labels.
 
-## Functions:
+#### Functions:
 
 - `generate_random_string`: Generates a random alphanumeric string of a specified length.
 - `draw_text`: Draws rotated text on an image with a specified font, position, color, and angle.
