@@ -76,6 +76,10 @@ This script sets up a Gradio interface for real-time captcha detection using the
 - `predict_captcha`: Predicts captcha text using the loaded model.
 - `detect_captcha`: Performs captcha detection using the model.
 
+View of interface:
+
+![interface view](interface_view.png)
+
 ### 7. `test.py`
 
 This script tests the trained model on a set of example captcha images, showcasing the predictions along with their confidence scores.
