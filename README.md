@@ -86,6 +86,10 @@ This script tests the trained model on a set of example captcha images, showcasi
 - `predict_captcha`: Predicts captcha text using the loaded model.
 - `show_all_images_with_predictions`: Displays a grid of example captcha images along with model predictions and confidence scores.
 
+#### Results
+
+The model get around 92% accuracy and around 1.5% charecter error rate (CER) on test dataset.
+
 ### 8. `main.py`
 
 The main script orchestrating the training process:
