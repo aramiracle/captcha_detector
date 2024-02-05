@@ -88,7 +88,7 @@ This script tests the trained model on a set of example captcha images, showcasi
 
 #### Results
 
-The model get around 92% accuracy and around 1.5% charecter error rate (CER) on test dataset.
+The model achieves an accuracy of approximately 92% and exhibits a character error rate (CER) of around 1.5% when evaluated on the test dataset.
 
 ### 8. `main.py`
 
